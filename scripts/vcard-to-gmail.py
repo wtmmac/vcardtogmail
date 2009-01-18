@@ -18,7 +18,7 @@ import gdata.contacts.service
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 
-__VERSION__ = "0.1"
+__VERSION__ = "0.2"
 
 VOBJECT_VDATA_COMPLEX_REL_MAP = [{
   "vcard_attr"   : "adr",
@@ -57,6 +57,18 @@ VOBJECT_VDATA_COMPLEX_REL_MAP = [{
     None : gdata.contacts.REL_OTHER
     }
   }]
+
+def merge_notes(gcontact, vcard):
+  # print gcontact.organization.org_name.text
+  # print vcard.org.value[0]
+
+  if hasattr(vcard, "org"):
+    uitem = unicode(vcard.org.value[0])
+
+    if not gcontact.organization \
+          or gcontact.organization.org_name.text != uitem:
+      print "new company!!"
+
 
 def merge_object_with_ref(gcontact, vcard, rel_map):
   vcard_attr   = rel_map["vcard_attr"]
@@ -113,6 +125,8 @@ def update_cards(vcards, gd_client):
       changed = 0
       for map_item in VOBJECT_VDATA_COMPLEX_REL_MAP:
         changed += merge_object_with_ref(gcontact[0], vcard, map_item)
+
+      changed += merge_notes(gcontact[0], vcard)
 
       if changed > 0:
         gd_client.UpdateContact(gcontact[0].GetEditLink().href, gcontact[0])
