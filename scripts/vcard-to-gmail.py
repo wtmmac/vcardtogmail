@@ -119,7 +119,7 @@ def update_cards(vcards, gd_client):
 
 def main(argv):
   if len(argv) < 3:
-    print >> sys.stderr, "username password [vcards...]"
+    print >> sys.stderr, "username password [vcard files...]"
     exit(1)
 
   gd_client = login(argv[0], argv[1])
