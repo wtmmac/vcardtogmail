@@ -58,7 +58,7 @@ VOBJECT_VDATA_COMPLEX_REL_MAP = [{
     }
   }]
 
-def merge_notes(gcontact, vcard):
+def merge_org(gcontact, vcard):
   # print gcontact.organization.org_name.text
   # print vcard.org.value[0]
 
@@ -67,8 +67,16 @@ def merge_notes(gcontact, vcard):
 
     if not gcontact.organization \
           or gcontact.organization.org_name.text != uitem:
-      print "new company!!"
+      
+      gorg = gdata.contacts.Organization(org_name=gdata.contacts.OrgName(uitem))
+      gcontact.organization = gorg
+      
+      print "organisation added to %s: (%s)" % (
+        gcontact.title.text, uitem )
+      
+      return 1
 
+  return 0
 
 def merge_object_with_ref(gcontact, vcard, rel_map):
   vcard_attr   = rel_map["vcard_attr"]
@@ -126,7 +134,8 @@ def update_cards(vcards, gd_client):
       for map_item in VOBJECT_VDATA_COMPLEX_REL_MAP:
         changed += merge_object_with_ref(gcontact[0], vcard, map_item)
 
-      changed += merge_notes(gcontact[0], vcard)
+      # organisation
+      changed += merge_org(gcontact[0], vcard)
 
       if changed > 0:
         gd_client.UpdateContact(gcontact[0].GetEditLink().href, gcontact[0])
