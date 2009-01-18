@@ -58,22 +58,38 @@ VOBJECT_VDATA_COMPLEX_REL_MAP = [{
     }
   }]
 
-def merge_org(gcontact, vcard):
-  # print gcontact.organization.org_name.text
-  # print vcard.org.value[0]
+def merge_notes(gcontact, vcard):
+  if hasattr(vcard, "note"):
+    uitem = unicode(vcard.note.value)
 
+    if not len(uitem):
+      return 0
+
+    if gcontact.content is None or gcontact.content.text != uitem:
+      gcontact.content = atom.Content(text=uitem)
+
+      print "notes added to %s: (%s)" % (
+        gcontact.title.text, uitem )
+
+      return 1
+
+  return 0
+
+def merge_org(gcontact, vcard):
   if hasattr(vcard, "org"):
     uitem = unicode(vcard.org.value[0])
 
-    if not gcontact.organization \
+    if not len(uitem):
+      return 0
+
+    if gcontact.organization is None \
           or gcontact.organization.org_name.text != uitem:
-      
       gorg = gdata.contacts.Organization(org_name=gdata.contacts.OrgName(uitem))
       gcontact.organization = gorg
-      
+
       print "organisation added to %s: (%s)" % (
         gcontact.title.text, uitem )
-      
+
       return 1
 
   return 0
@@ -126,6 +142,9 @@ def update_cards(vcards, gd_client):
       for map_item in VOBJECT_VDATA_COMPLEX_REL_MAP:
         merge_object_with_ref(gcontact, vcard, map_item)
 
+      merge_notes(gcontact[0], vcard)
+      merge_org(gcontact[0], vcard)
+
       gd_client.CreateContact(gcontact)
     else:
       # only let goolge know what's going on if we actually changed a
@@ -134,8 +153,9 @@ def update_cards(vcards, gd_client):
       for map_item in VOBJECT_VDATA_COMPLEX_REL_MAP:
         changed += merge_object_with_ref(gcontact[0], vcard, map_item)
 
-      # organisation
-      changed += merge_org(gcontact[0], vcard)
+      # organisation and notes
+      changed += merge_notes(gcontact[0], vcard) \
+          + merge_org(gcontact[0], vcard)
 
       if changed > 0:
         gd_client.UpdateContact(gcontact[0].GetEditLink().href, gcontact[0])
