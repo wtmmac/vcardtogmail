@@ -142,10 +142,15 @@ def update_cards(vcards, gd_client):
       for map_item in VOBJECT_VDATA_COMPLEX_REL_MAP:
         merge_object_with_ref(gcontact, vcard, map_item)
 
-      merge_notes(gcontact[0], vcard)
-      merge_org(gcontact[0], vcard)
+      merge_notes(gcontact, vcard)
+      merge_org(gcontact, vcard)
 
-      gd_client.CreateContact(gcontact)
+      try:
+        gd_client.CreateContact(gcontact)
+      except gdata.service.RequestError, re:
+        print >> sys.stderr, "Error: When processing '%s' google said: %d: %s" % (
+          name, re.message["status"], re.message["reason"] )
+
     else:
       # only let goolge know what's going on if we actually changed a
       # record...
@@ -158,7 +163,11 @@ def update_cards(vcards, gd_client):
           + merge_org(gcontact[0], vcard)
 
       if changed > 0:
-        gd_client.UpdateContact(gcontact[0].GetEditLink().href, gcontact[0])
+        try:
+          gd_client.UpdateContact(gcontact[0].GetEditLink().href, gcontact[0])
+        except gdata.service.RequestError, re:
+          print >> sys.stderr, "Error: When processing '%s' google said: %d: %s" % (
+            name, re.message["status"], re.message["reason"] )
 
 def main(argv):
   if len(argv) < 3:
