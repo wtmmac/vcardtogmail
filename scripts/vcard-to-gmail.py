@@ -180,17 +180,20 @@ def process_options(options):
       ("help"     , "h", "Print (this) usage summary.")])
 
   # basicly pretty print the above
-  help = lambda: "\n".join(fancy.generate_help())
+  help = lambda: "vcard-to-gmail [options...] <vcards...>\n" \
+      + "\n".join(fancy.generate_help())
 
   try:
-    fancy.getopt(object=options)
+    rest = fancy.getopt(object=options)
   except DistutilsArgError, e:
-    print >> sys.stderr, e, "\n\n", help()
+    print >> sys.stderr, "error: ", e, "\n\n", help()
+    exit(1)
 
   if options.help:
     print help()
+    exit(0)
 
-  return options
+  return ( rest, options)
 
 def main(argv):
   class Options:
@@ -200,7 +203,7 @@ def main(argv):
     help          = 0
 
   # help is taken care of in here
-  options = process_options(Options())
+  ( rest, options) = process_options(Options())
 
   exit(0)
   gd_client = login(argv[0], argv[1])
