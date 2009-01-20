@@ -6,7 +6,8 @@ import vobject
 # google
 import atom
 import gdata.contacts.service
-import distutils.fancy_getopt
+from distutils.fancy_getopt import FancyGetopt, OptionDummy
+from distutils.errors import DistutilsArgError
 
 # Copyright (c) 2008 Philip Jackson <phil@shellarchive.co.uk>
 
@@ -172,15 +173,36 @@ def update_cards(vcards, gd_client):
               "google said: %d: %s" % ( name, re.message["status"],
                                         re.message["reason"] )
 
-class Options:
-  username = ""
-  password = ""
+def process_options(options):
+  fancy = FancyGetopt([
+      ("username=", "u", "Google username."),
+      ("password=", "p", "Google password."),
+      ("help"     , "h", "Print (this) usage summary.")])
+
+  # basicly pretty print the above
+  help = lambda: "\n".join(fancy.generate_help())
+
+  try:
+    fancy.getopt(object=options)
+  except DistutilsArgError, e:
+    print >> sys.stderr, e, "\n\n", help()
+
+  if options.help:
+    print help()
+
+  return options
 
 def main(argv):
-  if len(argv) < 3:
-    print >> sys.stderr, "username password [vcard files...]"
-    exit(1)
+  class Options:
+    username      = None
+    password      = None
+    contact_limit = 300
+    help          = 0
 
+  # help is taken care of in here
+  options = process_options(Options())
+
+  exit(0)
   gd_client = login(argv[0], argv[1])
 
   vcards = dict()
