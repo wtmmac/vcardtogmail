@@ -6,6 +6,7 @@ import vobject
 # google
 import atom
 import gdata.contacts.service
+import distutils.fancy_getopt
 
 # Copyright (c) 2008 Philip Jackson <phil@shellarchive.co.uk>
 
@@ -84,7 +85,8 @@ def merge_org(gcontact, vcard):
 
     if gcontact.organization is None \
           or gcontact.organization.org_name.text != uitem:
-      gorg = gdata.contacts.Organization(org_name=gdata.contacts.OrgName(uitem))
+      gorg = gdata.contacts.Organization(
+        org_name=gdata.contacts.OrgName(uitem))
       gcontact.organization = gorg
 
       print "organisation added to %s: (%s)" % (
@@ -148,9 +150,9 @@ def update_cards(vcards, gd_client):
       try:
         gd_client.CreateContact(gcontact)
       except gdata.service.RequestError, re:
-        print >> sys.stderr, "Error: When processing '%s' google said: %d: %s" % (
-          name, re.message["status"], re.message["reason"] )
-
+        print >> sys.stderr, "Error: When processing '%s' " \
+            "google said: %d: %s" % ( name, re.message["status"],
+                                      re.message["reason"] )
     else:
       # only let goolge know what's going on if we actually changed a
       # record...
@@ -166,8 +168,13 @@ def update_cards(vcards, gd_client):
         try:
           gd_client.UpdateContact(gcontact[0].GetEditLink().href, gcontact[0])
         except gdata.service.RequestError, re:
-          print >> sys.stderr, "Error: When processing '%s' google said: %d: %s" % (
-            name, re.message["status"], re.message["reason"] )
+          print >> sys.stderr, "Error: When processing '%s' " \
+              "google said: %d: %s" % ( name, re.message["status"],
+                                        re.message["reason"] )
+
+class Options:
+  username = ""
+  password = ""
 
 def main(argv):
   if len(argv) < 3:
