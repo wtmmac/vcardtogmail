@@ -196,6 +196,7 @@ def login(username, password):
   gd_client.email = username
   gd_client.password = password
   gd_client.source = "none-vcardgmail-" + __VERSION__
+  gd_client.accountType = "HOSTED_OR_GOOGLE"
 
   try:
     gd_client.ProgrammaticLogin()
